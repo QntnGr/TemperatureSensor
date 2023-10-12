@@ -4,9 +4,8 @@
     {
         public double Measure { get; }
         public DateTime MeasureDateTime { get; }
-
-        public string Name => "HOT";
-
+        public string Name => StateName;
+        public static string StateName => "HOT";
         public StateHot(double measure, DateTime measureDateTime)
         {
             Measure = measure;

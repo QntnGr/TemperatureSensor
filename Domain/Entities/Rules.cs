@@ -9,8 +9,9 @@
         }
 
         public double LimitMin { get; }
-        public double? LimitMax { get; }
-        public string Name => nameof(WarmLimitStateRule);
+        public double LimitMax { get; }
+        public string Name => RuleName;
+        public static string RuleName => nameof(WarmLimitStateRule);
 
         public ITemperatureState? ResolveState(double measure)
         {
@@ -24,16 +25,15 @@
     {
         public HotLimitStateRule(double limit)
         {
-            LimitMin = limit;
+            Limit = limit;
         }
 
-        public double LimitMin { get; }
-        public double? LimitMax => null;
-        public string Name => nameof(HotLimitStateRule);
-
+        public double Limit { get; }
+        public string Name => RuleName;
+        public static string RuleName => nameof(HotLimitStateRule);
         public ITemperatureState? ResolveState(double measure)
         {
-            return measure >= LimitMin ? new StateHot(measure, DateTime.UtcNow) : null;
+            return measure >= Limit ? new StateHot(measure, DateTime.UtcNow) : null;
         }
     }
 
@@ -41,16 +41,17 @@
     {
         public ColdLimitStateRule(double limit)
         {
-            LimitMin = limit;
+            Limit = limit;
         }
 
-        public double LimitMin { get; }
-        public double? LimitMax => null;
-        public string Name => nameof(ColdLimitStateRule);
+        public static string RuleName => nameof(ColdLimitStateRule);
+
+        public double Limit { get; }
+        public string Name => RuleName;
 
         public ITemperatureState? ResolveState(double measure)
         {
-            return measure < LimitMin ? new StateCold(measure, DateTime.UtcNow) : null;
+            return measure < Limit ? new StateCold(measure, DateTime.UtcNow) : null;
         }
     }
 }

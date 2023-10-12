@@ -8,14 +8,37 @@ namespace Infrastructure.Services
     {
         private static readonly SensorDB SensorDb = new() { TemperatureState = nameof(StateNone) };
         private static readonly IList<TemperatureStateDB> TemperatureStatesDb = new List<TemperatureStateDB>();
-
         private static readonly IList<TemperatureLimitStateRuleDB> TemperatureLimitStateRulesDb =
             new List<TemperatureLimitStateRuleDB>
             {
-                new(){Name = nameof(ColdLimitStateRule), LimitMin = 19},
-                new(){Name = nameof(HotLimitStateRule),  LimitMin = 30},
-                new(){Name = nameof(WarmLimitStateRule), LimitMin = 19, LimitMax = 30}
+                new(){Name = ColdLimitStateRule.RuleName, LimitMin = 19},
+                new(){Name = HotLimitStateRule.RuleName,  LimitMin = 30},
+                new(){Name = WarmLimitStateRule.RuleName, LimitMin = 19, LimitMax = 30}
             };
+
+        private static void MapStateRuleToStateRuleDb(TemperatureLimitStateRuleDB rule, ITemperatureLimitStateRule stateRule)
+        {
+            switch (stateRule)
+            {
+                case WarmLimitStateRule warmLimitStateRule:
+                    rule.LimitMax = warmLimitStateRule.LimitMax;
+                    rule.LimitMin = warmLimitStateRule.LimitMin;
+                    rule.Name = warmLimitStateRule.Name;
+                    break;
+                case HotLimitStateRule hotLimitStateRule:
+                    rule.LimitMax = hotLimitStateRule.Limit;
+                    rule.LimitMin = hotLimitStateRule.Limit;
+                    rule.Name = hotLimitStateRule.Name;
+                    break;
+                case ColdLimitStateRule coldLimitStateRule:
+                    rule.LimitMax = coldLimitStateRule.Limit;
+                    rule.LimitMin = coldLimitStateRule.Limit;
+                    rule.Name = coldLimitStateRule.Name;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(stateRule), $"Unknown type : Cannot convert {rule.GetType().Name} to {nameof(TemperatureLimitStateRuleDB)}.");
+            }
+        }
 
         public Task SaveAsync(Sensor sensor, CancellationToken cancellationToken = default)
         {
@@ -33,51 +56,44 @@ namespace Infrastructure.Services
 
             foreach (var temperatureLimitStateRule in sensor.StateRules)
             {
-                var rulesDb = TemperatureLimitStateRulesDb.FirstOrDefault(x => x.Name == temperatureLimitStateRule.Name);
-                if (rulesDb == null)
+                var ruleDb = TemperatureLimitStateRulesDb.FirstOrDefault(x => x.Name == temperatureLimitStateRule.Name);
+                if (ruleDb == null)
                 {
-                    TemperatureLimitStateRulesDb.Add(new TemperatureLimitStateRuleDB
-                    {
-                        Name = temperatureLimitStateRule.Name,
-                        LimitMax = temperatureLimitStateRule.LimitMax,
-                        LimitMin = temperatureLimitStateRule.LimitMin
-                    });
+                    ruleDb = new TemperatureLimitStateRuleDB();
+                    MapStateRuleToStateRuleDb(ruleDb, temperatureLimitStateRule);
                 }
                 else
                 {
-                    rulesDb.Name = temperatureLimitStateRule.Name;
-                    rulesDb.LimitMax = temperatureLimitStateRule.LimitMax;
-                    rulesDb.LimitMin = temperatureLimitStateRule.LimitMin;
+                    MapStateRuleToStateRuleDb(ruleDb, temperatureLimitStateRule);
                 }
             }
 
             return Task.CompletedTask;
-
         }
 
         public Task<Sensor> GetAsync(CancellationToken cancellationToken = default)
         {
             var temperatureStatesHistory = TemperatureStatesDb.Select(x =>
             {
-                if (x.Name == "NONE")
+                if (x.Name == StateNone.StateName)
                     return (ITemperatureState)new StateNone();
-                if (x.Name == "WARM")
+                if (x.Name == StateWarm.StateName)
                     return (ITemperatureState)new StateWarm(x.Measure, x.MeasureDateTime);
-                if (x.Name == "COLD")
+                if (x.Name == StateCold.StateName)
                     return (ITemperatureState)new StateCold(x.Measure, x.MeasureDateTime);
-                if (x.Name == "HOT")
+                if (x.Name == StateHot.StateName)
                     return (ITemperatureState)new StateHot(x.Measure, x.MeasureDateTime);
                 throw new ArgumentOutOfRangeException(nameof(x.Name), $"Unknown state type {x.Name}");
             }).OrderByDescending(x => x.MeasureDateTime)
               .ToList();
 
-            var temperatureStateRules =TemperatureLimitStateRulesDb.Select(x =>
+            var temperatureStateRules = TemperatureLimitStateRulesDb.Select(x =>
             {
-                if (x.Name == nameof(ColdLimitStateRule))
+                if (x.Name == ColdLimitStateRule.RuleName)
                     return (ITemperatureLimitStateRule)new ColdLimitStateRule(x.LimitMin);
-                if (x.Name == nameof(WarmLimitStateRule))
-                    return (ITemperatureLimitStateRule)new WarmLimitStateRule(x.LimitMin, x.LimitMax!.Value);
-                if (x.Name == nameof(HotLimitStateRule))
+                if (x.Name == WarmLimitStateRule.RuleName)
+                    return (ITemperatureLimitStateRule)new WarmLimitStateRule(x.LimitMin, x.LimitMax);
+                if (x.Name == HotLimitStateRule.RuleName)
                     return (ITemperatureLimitStateRule)new HotLimitStateRule(x.LimitMin);
                 throw new ArgumentOutOfRangeException(nameof(x.Name), $"Unknown state rule {x.Name}");
             }).ToList();
@@ -85,6 +101,7 @@ namespace Infrastructure.Services
             var stateTemperatureState = temperatureStatesHistory.FirstOrDefault(x => x.Name == SensorDb.TemperatureState);
 
             var sensor = new Sensor(temperatureStateRules, stateTemperatureState, temperatureStatesHistory);
+
             return Task.FromResult(sensor);
         }
     }

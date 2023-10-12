@@ -2,14 +2,9 @@
 {
     public class StateNone : ITemperatureState 
     {
-        public double Measure { get; }
-        public DateTime MeasureDateTime { get; }
-        public string Name => "NONE";
-
-        public StateNone()
-        {
-            Measure = 0;
-            MeasureDateTime = DateTime.UtcNow;
-        }
+        public double Measure => 0;
+        public DateTime MeasureDateTime { get; } = DateTime.UtcNow;
+        public string Name => StateName;
+        public static string StateName => "NONE";
     }
 }

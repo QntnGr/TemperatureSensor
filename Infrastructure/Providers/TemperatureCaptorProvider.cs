@@ -5,9 +5,14 @@ namespace Infrastructure.Providers
 {
     public class TemperatureCaptorProvider : ITemperatureCaptorProvider 
     {
+        public TemperatureCaptorProvider()
+        {
+            TemperatureCaptorLegacy.Start();
+        }
+
         public double Measure()
         {
-            return TemperatureCaptorLegacy.Measure();
+            return TemperatureCaptorLegacy.GetCurrentMeasure();
         }
     }
 }

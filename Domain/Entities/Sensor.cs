@@ -3,12 +3,17 @@
 namespace Domain.Entities
 {
     //Aggregate
-    public class Sensor
+    //Single entity aggregate
+    //https://deviq.com/domain-driven-design/aggregate-pattern
+    public class Sensor : IAggregate<Sensor>
     {
         private readonly Dictionary<Type, ITemperatureLimitStateRule> _stateRulesMap;
         private readonly object _lock;
         private readonly ICollection<ITemperatureState> _temperatureStatesHistory;
         private readonly ICollection<ITemperatureState> _temperatureStatesAdded;
+
+        //Aggregate Root
+        public Sensor Root => this;
 
         public Sensor(IEnumerable<ITemperatureLimitStateRule> stateRules)
         {
