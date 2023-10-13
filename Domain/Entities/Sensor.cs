@@ -60,11 +60,9 @@ namespace Domain.Entities
             }
         }
 
-        public void MeasureTemperature(ITemperatureCaptorProvider captorProvider)
+        public void ChangeTemperatureMeasure(double measure)
         {
             lock (_lock) {
-                var measure = captorProvider.Measure();
-
                 foreach (var rule in StateRules)
                 {
                     var state = rule.ResolveState(measure);

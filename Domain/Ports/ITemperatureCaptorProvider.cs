@@ -2,6 +2,6 @@
 {
     public interface ITemperatureCaptorProvider
     {
-        public double Measure();
+        public double GetMeasure();
     }
 }

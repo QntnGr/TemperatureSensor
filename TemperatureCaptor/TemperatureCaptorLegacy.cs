@@ -92,7 +92,7 @@ namespace TemperatureCaptor
         {
             lock (Lock)
             {
-                if (_runningTask is { IsCompleted: true })
+                if (_runningTask is { IsCompleted: true } or null)
                     return;
                 if (!CancellationTokenSource.IsCancellationRequested)
                     CancellationTokenSource.Cancel(true);

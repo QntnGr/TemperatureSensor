@@ -18,7 +18,8 @@ namespace Application.Services
         public async Task<ITemperatureState> GetTemperatureAsync(CancellationToken cancellationToken = default)
         {
             var sensor = await _sensorRepository.GetAsync(cancellationToken);
-            sensor.MeasureTemperature(_temperatureCaptorProvider);
+            var measure = _temperatureCaptorProvider.GetMeasure();
+            sensor.ChangeTemperatureMeasure(measure);
             await _sensorRepository.SaveAsync(sensor, cancellationToken);
             return sensor.CurrentTemperatureState;
         }

@@ -17,7 +17,7 @@ namespace Infrastructure.Providers
             _viewAccessor = _mappedFile.CreateViewAccessor(0, sizeof(double), MemoryMappedFileAccess.Read);
         }
 
-        public double Measure()
+        public double GetMeasure()
         {
            return _viewAccessor.ReadDouble(0);
         }
