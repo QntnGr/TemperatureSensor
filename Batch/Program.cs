@@ -9,7 +9,7 @@ using var captorProvider = new TemperatureCaptorProvider();
 var sensorRepository = new SensorRepository();
 var appServiceApp = new SensorApplicationService(sensorRepository, captorProvider);
 
-Console.WriteLine("...............Measuring...............");
+Console.WriteLine("...............Measuring...........");
 for (var i = 0; i < 10; i++)
 {
     Thread.Sleep(1000);
