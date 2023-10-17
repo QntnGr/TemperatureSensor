@@ -1,5 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+//var builder = WebApplication.CreateBuilder(args);
+
+
 using Application.Services;
 using Domain.Entities;
 using Infrastructure.Providers;
@@ -8,6 +11,7 @@ using Infrastructure.Services;
 using var captorProvider = new TemperatureCaptorProvider();
 var sensorRepository = new SensorRepository();
 var appServiceApp = new SensorApplicationService(sensorRepository, captorProvider);
+
 
 Console.WriteLine("...............Measuring...........");
 for (var i = 0; i < 10; i++)
